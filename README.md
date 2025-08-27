@@ -38,6 +38,15 @@ A FSM-based vending machine system that accepts inputs (coins), checks for the a
   
 ---
 
+### 4. 🛤️ Automated Railway Signaling System
+This Verilog module simulates an automatic railway signaling system using a finite state machine (FSM). It controls four sequential signals (a, b, c, d) along a single track, transitioning through red, yellow, double yellow, and green states based on train detection (x). The FSM progresses through seven states (s0 to s6) with timed delays to mimic real-world signal behavior. Reset (clr) initializes the system, and clock (clk) drives the transitions.
+
+- **Files Included:** RTL design, testbench
+- **Features:** Sequencial signal change in 4 signals when a train passes
+- **Tools Used:** Xilinx/Vivado or EDA playground
+
+---
+
 ## 📂 Folder Structure
 
 Each project folder contains:
