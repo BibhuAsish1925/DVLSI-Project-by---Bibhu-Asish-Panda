@@ -1,32 +1,40 @@
-module automatic_signaling_tb;
+module Automatic_signaling_tb;
 
   reg clk;
   reg clr;
   reg x;
   wire [1:0] a, b, c, d;
 
-  automatic_signaling dut (.a(a),.b(b),.c(c),.d(d),.x(x),.clk(clk),.clr(clr));
+  Automatic_signaling uut (.a(a),.b(b),.c(c),.d(d),.x(x),.clk(clk),.clr(clr));
 
-  initial clk = 0;
   always #5 clk = ~clk;
 
   initial begin
-    $display("starting automatic_signaling testbench...");
-    $monitor("time=%0t | state: a=%b b=%b c=%b d=%b | x=%b clr=%b", $time, a, b, c, d, x, clr);
+    $dumpfile("Automatic_signaling_tb.vcd");
+    $dumpvars(0, Automatic_signaling_tb);
 
-    // initialise
-    clr = 1; x = 0;
-    #20 clr = 0; // release reset
+    clk = 0;
+    clr = 1;
+    x = 0;
 
-    // trigger train arrival
-    #30 x = 1;
+    #20;
+    clr = 0;
 
-    #300 x = 0; // train gone
+    #50;
+    x = 1;
+    #300;
 
-    // wait for fsm to return to start
-    #100;
+    #300;
+    x = 0;
+    #200;
 
+    #200;
     $finish;
+  end
+
+  initial begin
+    $monitor("Time=%0t | x=%b | a=%b b=%b c=%b d=%b",
+              $time, x, a, b, c, d);
   end
 
 endmodule
