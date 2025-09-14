@@ -1,15 +1,14 @@
-module automatic_signaling(a, b, c, d, x, clk, clr);
-  output reg [1:0] a, b, c, d;
-  input x;
-  input clk, clr;
+module Automatic_signaling(
+  output reg [1:0] a, b, c, d,
+  input x,
+  input clk, clr
+);
 
-  // signal encodings
-  parameter r  = 2'd0; // red
-  parameter y  = 2'd1; // yellow
-  parameter yy = 2'd2; // double yellow
-  parameter g  = 2'd3; // green
+  parameter r  = 2'd0;
+  parameter yy  = 2'd1;
+  parameter y = 2'd2;
+  parameter g  = 2'd3;
 
-  // fsm states
   parameter s0 = 3'd0;
   parameter s1 = 3'd1;
   parameter s2 = 3'd2;
@@ -18,7 +17,6 @@ module automatic_signaling(a, b, c, d, x, clk, clr);
   parameter s5 = 3'd5;
   parameter s6 = 3'd6;
 
-  // delay constants (in clock cycles)
   integer g2rdelay  = 10;
   integer r2yydelay = 10;
   integer yy2ydelay = 10;
@@ -26,19 +24,23 @@ module automatic_signaling(a, b, c, d, x, clk, clr);
 
   reg [2:0] state;
   reg [2:0] next_state;
+  reg [7:0] count;
 
-  // state transition logic
   always @(posedge clk) begin
-    if (clr)
+    if (clr) begin
       state <= s0;
-    else
+      count <= 0;
+    end else begin
       state <= next_state;
+      if (state != next_state)
+        count <= 0;
+      else
+        count <= count + 1;
+    end
   end
 
-  // output logic based on current state
   always @(state) begin
-    a = g; b = g; c = g; d = g; // default values
-
+    a = g; b = g; c = g; d = g;
     case (state)
       s0: begin
         a = g; b = g; c = g; d = g;
@@ -64,42 +66,38 @@ module automatic_signaling(a, b, c, d, x, clk, clr);
     endcase
   end
 
-  // next state logic with delays
-  always @(state or x) begin
+  always @(*) begin
     case (state)
       s0: begin
-        if (x)
-          next_state = s1;
-        else
-          next_state = s0;
+        if (x) next_state = s1;
+        else   next_state = s0;
       end
       s1: begin
-        repeat (g2rdelay) @(posedge clk);
-        next_state = s2;
+        if (count >= g2rdelay) next_state = s2;
+        else                   next_state = s1;
       end
       s2: begin
-        repeat (r2yydelay) @(posedge clk);
-        next_state = s3;
+        if (count >= r2yydelay) next_state = s3;
+        else                    next_state = s2;
       end
       s3: begin
-        repeat (yy2ydelay) @(posedge clk);
-        next_state = s4;
+        if (count >= yy2ydelay) next_state = s4;
+        else                    next_state = s3;
       end
       s4: begin
-        repeat (y2gdelay) @(posedge clk);
-        next_state = s5;
+        if (count >= y2gdelay) next_state = s5;
+        else                   next_state = s4;
       end
       s5: begin
-        repeat (g2rdelay) @(posedge clk);
-        next_state = s6;
+        if (count >= g2rdelay) next_state = s6;
+        else                   next_state = s5;
       end
       s6: begin
-        if (x)
-          next_state = s6;
-        else
-          next_state = s0;
+        if (x) next_state = s6;
+        else   next_state = s0;
       end
       default: next_state = s0;
     endcase
   end
+
 endmodule
